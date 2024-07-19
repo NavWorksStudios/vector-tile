@@ -97,12 +97,14 @@ private:
 class buffer {
 public:
     buffer(std::string const& data);
-    std::vector<std::string> layerNames() const;
-    std::map<std::string, const protozero::data_view> getLayers() const { return layers; };
+
+    const std::vector<std::string>& layerNames() const { return layer_names; }
+    const std::map<std::string, const protozero::data_view>& getLayers() const { return layers; };
     layer getLayer(const std::string&) const;
 
 private:
     std::map<std::string, const protozero::data_view> layers;
+    std::vector<std::string> layer_names;
 };
 
 static mapbox::feature::value parseValue(protozero::data_view const& value_view) {
@@ -377,16 +379,8 @@ inline buffer::buffer(std::string const& data)
                 throw std::runtime_error("Layer missing name");
             }
             layers.emplace(name, layer_view);
+            layer_names.emplace(name);
         }
-}
-
-inline std::vector<std::string> buffer::layerNames() const {
-    std::vector<std::string> names;
-    names.reserve(layers.size());
-    for (auto const& layer : layers) {
-        names.emplace_back(layer.first);
-    }
-    return names;
 }
 
 inline layer buffer::getLayer(const std::string& name) const {
