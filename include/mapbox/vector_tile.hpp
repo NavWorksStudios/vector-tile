@@ -78,7 +78,7 @@ public:
 
     std::size_t featureCount() const { return features.size(); }
     protozero::data_view const& getFeature(std::size_t) const;
-    std::string const& getName() const;
+    const std::string& getName() const;
     std::uint32_t getExtent() const { return extent; }
     std::uint32_t getVersion() const { return version; }
 
@@ -98,13 +98,13 @@ class buffer {
 public:
     buffer(std::string const& data);
 
-    const std::vector<std::string>& layerNames() const { return layer_names; }
-    const std::map<std::string, const protozero::data_view>& getLayers() const { return layers; };
-    layer getLayer(const std::string&) const;
+    const std::vector<nav::stringid>& layerNames() const { return layer_names; }
+    const std::map<nav::stringid, const protozero::data_view>& getLayers() const { return layers; };
+    layer getLayer(const nav::stringid&) const;
 
 private:
-    std::map<std::string, const protozero::data_view> layers;
-    std::vector<std::string> layer_names;
+    std::map<nav::stringid, const protozero::data_view> layers;
+    std::vector<nav::stringid> layer_names;
 };
 
 static mapbox::feature::value parseValue(protozero::data_view const& value_view) {
@@ -379,11 +379,11 @@ inline buffer::buffer(std::string const& data)
                 throw std::runtime_error("Layer missing name");
             }
             layers.emplace(name, layer_view);
-            layer_names.emplace(name);
+            layer_names.emplace_back(name);
         }
 }
 
-inline layer buffer::getLayer(const std::string& name) const {
+inline layer buffer::getLayer(const nav::stringid& name) const {
     auto layer_it = layers.find(name);
     if (layer_it == layers.end()) {
         throw std::runtime_error(std::string("no layer by the name of '")+name+"'");
@@ -468,7 +468,7 @@ inline protozero::data_view const& layer::getFeature(std::size_t i) const {
     return features.at(i);
 }
 
-inline std::string const& layer::getName() const {
+inline const std::string& layer::getName() const {
     return name;
 }
 
