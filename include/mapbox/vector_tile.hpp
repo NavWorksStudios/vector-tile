@@ -98,12 +98,12 @@ class buffer {
 public:
     buffer(std::string const& data);
 
-    const std::vector<nav::stringid>& layerNames() const { return layer_names; }
-    const std::map<nav::stringid, const protozero::data_view>& getLayers() const { return layers; };
+    inline const auto& layerNames() const { return layer_names; }
+    inline const auto& getLayers() const { return layers; };
     layer getLayer(const nav::stringid&) const;
 
 private:
-    std::map<nav::stringid, const protozero::data_view> layers;
+    std::unordered_map<nav::stringid, const protozero::data_view> layers;
     std::vector<nav::stringid> layer_names;
 };
 
@@ -369,7 +369,7 @@ inline buffer::buffer(std::string const& data)
         while (data_reader.next(TileType::LAYERS)) {
             const protozero::data_view layer_view = data_reader.get_view();
             protozero::pbf_reader layer_reader(layer_view);
-            std::string name;
+            nav::stringid name;
             bool has_name = false;
             while (layer_reader.next(LayerType::NAME)) {
                 name = layer_reader.get_string();
@@ -386,7 +386,7 @@ inline buffer::buffer(std::string const& data)
 inline layer buffer::getLayer(const nav::stringid& name) const {
     auto layer_it = layers.find(name);
     if (layer_it == layers.end()) {
-        throw std::runtime_error(std::string("no layer by the name of '")+name+"'");
+        throw std::runtime_error(std::string("no layer by the name of '")+name.get()+"'");
     }
     return layer(layer_it->second);
 }
